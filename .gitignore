@@ -1,0 +1,28 @@
+# Python virtual environments and bytecode
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Test and tool output
+.pytest_cache/
+htmlcov/
+coverage.xml
+test-results/
+logs/
+selenium-profile/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+secrets.*
+
+# Local editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Raw screenshots may contain personal information; sanitized evidence can be committed
+evidence/raw/
