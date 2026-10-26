@@ -17,6 +17,7 @@ def browser():
         pytest.skip("Set APP_BASE_URL to the authorized test environment in .env")
 
     options = Options()
+    options.add_argument("--window-size=1365,900")
     if os.getenv("HEADLESS", "false").lower() in {"1", "true", "yes"}:
         options.add_argument("--headless=new")
 
@@ -25,7 +26,6 @@ def browser():
         pytest.skip(f"Browser '{browser_name}' is not configured in this starter scaffold")
 
     driver = webdriver.Chrome(options=options)
-    driver.set_window_size(1365, 900)
     driver.get(base_url)
     try:
         yield driver
