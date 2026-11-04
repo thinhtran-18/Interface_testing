@@ -12,12 +12,6 @@ from pages.login_page import LoginPage
 from pages.dashboard_page import DashboardPage
 
 
-def save_evidence(driver, filename):
-    evidence_dir = os.path.join("test-results", "evidence", "login")
-    os.makedirs(evidence_dir, exist_ok=True)
-    driver.save_screenshot(os.path.join(evidence_dir, filename))
-
-
 @pytest.fixture(scope="module")
 def driver():
     """Module-scoped driver: runs all login form tests in a single clean browser session."""
@@ -26,11 +20,16 @@ def driver():
         pytest.skip("Chưa cấu hình APP_BASE_URL trong .env")
 
     options = Options()
+    options.page_load_strategy = "eager"
     options.add_argument("--window-size=1365,900")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
     if os.getenv("HEADLESS", "false").lower() in {"1", "true", "yes"}:
         options.add_argument("--headless=new")
 
     drv = webdriver.Chrome(options=options)
+    drv.set_page_load_timeout(60)  # Tuần 3: đặt timeout rõ ràng tránh treo vô thời hạn
     drv.get(base_url)
     try:
         yield drv
@@ -70,13 +69,16 @@ def test_WEB_FORM_02_password_visibility_toggle(login_page):
     """WEB-FORM-02: Kiểm tra tương tác nút con mắt (Eye Toggle) để hiển thị/ẩn mật khẩu."""
     assert login_page.get_password_input_type() == "password"
 
+    # Nhập mật khẩu mẫu theo đúng đặc tả ca kiểm thử
+    login_page.enter_password("Test123Password")
     login_page.toggle_password_visibility()
-    time.sleep(0.3)
+    time.sleep(0.4)
     assert login_page.get_password_input_type() == "text", "Mật khẩu chưa chuyển sang dạng hiển thị"
 
     login_page.toggle_password_visibility()
-    time.sleep(0.3)
+    time.sleep(0.4)
     assert login_page.get_password_input_type() == "password", "Mật khẩu chưa chuyển về dạng ẩn"
+    login_page.enter_password("")
 
 
 @pytest.mark.web
@@ -105,7 +107,8 @@ def test_WEB_FORM_04_empty_credentials_validation(login_page, driver):
     assert "Vui lòng nhập tên đăng nhập" in error_msg
     assert "Vui lòng nhập mật khẩu" in error_msg
 
-    save_evidence(driver, "WEB_FORM_04_empty_credentials.png")
+    os.makedirs("evidence/web", exist_ok=True)
+    driver.save_screenshot("evidence/web/WEB_FORM_04_empty_credentials.png")
 
 
 @pytest.mark.web
@@ -144,7 +147,7 @@ def test_WEB_FORM_07_invalid_credentials_error_message(login_page, driver):
 
     error_msg = login_page.get_error_message()
     assert "Tên đăng nhập hoặc mật khẩu không đúng" in error_msg
-    save_evidence(driver, "WEB_FORM_07_invalid_credentials.png")
+    driver.save_screenshot("evidence/web/WEB_FORM_07_invalid_credentials.png")
 
 
 @pytest.mark.web
@@ -155,6 +158,7 @@ def test_WEB_FORM_08_successful_login_with_valid_credentials(login_page, driver)
     if not username or not password:
         pytest.skip("Chưa cấu hình TEST_USERNAME hoặc TEST_PASSWORD trong .env")
 
+    time.sleep(0.5)
     login_page.enter_username(username)
     login_page.enter_password(password)
     login_page.click_login()
