@@ -2,6 +2,7 @@
 
 from typing import List
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -30,19 +31,32 @@ class LoginPage(BasePage):
 
     def enter_username(self, username: str) -> None:
         elem = self.wait.until(EC.element_to_be_clickable(self.USERNAME_INPUT))
+        try:
+            elem.send_keys(Keys.CONTROL + "a")
+            elem.send_keys(Keys.BACKSPACE)
+        except Exception:
+            pass
         elem.clear()
         if username:
             elem.send_keys(username)
 
     def enter_password(self, password: str) -> None:
         elem = self.wait.until(EC.element_to_be_clickable(self.PASSWORD_INPUT))
+        try:
+            elem.send_keys(Keys.CONTROL + "a")
+            elem.send_keys(Keys.BACKSPACE)
+        except Exception:
+            pass
         elem.clear()
         if password:
             elem.send_keys(password)
 
     def click_login(self) -> None:
         btn = self.wait.until(EC.element_to_be_clickable(self.LOGIN_BUTTON))
-        self.driver.execute_script("arguments[0].click();", btn)
+        try:
+            btn.click()
+        except Exception:
+            self.driver.execute_script("arguments[0].click();", btn)
 
     def login(self, username: str, password: str) -> None:
         """Perform full login action."""
@@ -57,7 +71,10 @@ class LoginPage(BasePage):
 
     def toggle_password_visibility(self) -> None:
         toggle = self.wait.until(EC.presence_of_element_located(self.EYE_TOGGLE))
-        self.driver.execute_script("arguments[0].click();", toggle)
+        try:
+            toggle.click()
+        except Exception:
+            self.driver.execute_script("arguments[0].click();", toggle)
 
     def is_remember_checked(self) -> bool:
         checkbox = self.driver.find_element(*self.REMEMBER_CHECKBOX)

@@ -21,10 +21,15 @@ def logged_in_dashboard():
         pytest.skip("TEST_USERNAME or TEST_PASSWORD not set in .env")
 
     options = Options()
+    options.page_load_strategy = "eager"
     options.add_argument("--window-size=1365,900")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
     if os.getenv("HEADLESS", "false").lower() in {"1", "true", "yes"}:
         options.add_argument("--headless=new")
     driver = webdriver.Chrome(options=options)
+    driver.set_page_load_timeout(60)
     driver.get(base_url)
 
     login_page = LoginPage(driver)
@@ -87,8 +92,6 @@ def test_quan_ly_nhan_su_module_is_listed(logged_in_dashboard):
 @pytest.mark.web
 def test_quan_ly_nhan_su_module_permission_status(logged_in_dashboard):
     """Verify that 'Quản lý nhân sự' module is currently disabled for this account."""
-    if os.getenv("EXPECT_HR_DISABLED", "").lower() not in {"1", "true", "yes"}:
-        pytest.skip("Set EXPECT_HR_DISABLED=true for an account without HR module access")
     logged_in_dashboard.select_filter_tab("Tất cả")
     cards = logged_in_dashboard.get_app_cards()
     ns_card = next((c for c in cards if "nhân sự" in c["name"].lower()), None)
